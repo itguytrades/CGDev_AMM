@@ -50,7 +50,8 @@ describe('AMM', () => {
     // Deploy AMM
     const AMM = await ethers.getContractFactory('AMM')
     amm = await AMM.deploy(token1.address, token2.address)
-
+  
+  })
   describe('Deployment', () => {
 
     it('has an address', async () => {
@@ -88,12 +89,43 @@ describe('AMM', () => {
       expect(await amm.token1Balance()).to.equal(amount)
       expect(await amm.token2Balance()).to.equal(amount)
 
+
       // Check deployer has 100 shares
       expect(await amm.shares(deployer.address)).to.equal(tokens(100)) // use tokens helper to calculate shares
 
       // Check pool has 100 total shares
       expect(await amm.totalShares()).to.equal(tokens(100))
 
+      /////////////////////////////////////////////////////////////
+      // LP adds more liquidity
+      //
+
+      // LP approves 50k tokens
+      amount = tokens(50000)
+      transaction = await token1.connect(liquidityProvider).approve(amm.address, amount)
+      await transaction.wait()
+
+      transaction = await token2.connect(liquidityProvider).approve(amm.address, amount)
+      await transaction.wait()
+
+      // Calculate token2 deposit amount
+      let token2Deposit = await amm.calculateToken2Deposit(amount)
+
+      // LP adds liquidity
+      transaction = await amm.connect(liquidityProvider).addLiquidity(amount, token2Deposit)
+      await transaction.wait()
+
+      // LP should have 50 shares
+      expect(await amm.shares(liquidityProvider.address)).to.equal(tokens(50))
+
+      // Deployer should still have 100 shares
+      expect(await amm.shares(deployer.address)).to.equal(tokens(100))
+
+      // Pool should have 150 shares
+      expect(await amm.totalShares()).to.equal(tokens(150))
+
+
     })
 
+  })
 })
