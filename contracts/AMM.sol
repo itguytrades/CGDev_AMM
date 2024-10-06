@@ -19,7 +19,16 @@ uint256 public totalShares;
 mapping(address => uint256) public shares;
 uint256 constant PRECISION = 10**18;
 
-
+    event Swap(
+        address user,
+        address tokenGive,
+        uint256 tokenGiveAmount,
+        address tokenGet,
+        uint256 tokenGetAmount,
+        uint256 token1Balance,
+        uint256 token2Balance,
+        uint256 timestamp
+    );
 
     constructor(Token _token1, Token _token2) {
     token1 = _token1;
