@@ -1,4 +1,4 @@
-//SPDX-License-Identifier: Unlicense
+// SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
@@ -8,16 +8,13 @@ contract AMM {
     Token public token1;
     Token public token2;
 
-// [ ] Manage Pool
-// [ ] Manage Deposits
-// [ ] Facilitate Swaps
-uint256 public token1Balance;
-uint256 public token2Balance;
-uint256 public K;
+    uint256 public token1Balance;
+    uint256 public token2Balance;
+    uint256 public K;
 
-uint256 public totalShares;
-mapping(address => uint256) public shares;
-uint256 constant PRECISION = 10**18;
+    uint256 public totalShares;
+    mapping(address => uint256) public shares;
+    uint256 constant PRECISION = 10**18;
 
     event Swap(
         address user,
@@ -31,50 +28,48 @@ uint256 constant PRECISION = 10**18;
     );
 
     constructor(Token _token1, Token _token2) {
-    token1 = _token1;
-    token2 = _token2;
+        token1 = _token1;
+        token2 = _token2;
     }
 
-function addLiquidity(uint256 _token1Amount, uint256 _token2Amount) external {
-    // Deposit Tokens
-    require(
-        token1.transferFrom(msg.sender, address(this), _token1Amount),
-        "failed to transfer token 1"
-    );
-    require(
-        token2.transferFrom(msg.sender, address(this), _token2Amount),
-        "failed to transfer token 2"
-    );
-
-    // Issue Shares
-    uint256 share;
-
-    // If first time adding liquidity, make share 100
-    if (totalShares == 0) {
-        share = 100 * PRECISION;
-        console.log("First Liquidity");
-    } else {
-        uint256 share1 = (totalShares * _token1Amount) / token1Balance;
-        uint256 share2 = (totalShares * _token2Amount) / token2Balance;
+    function addLiquidity(uint256 _token1Amount, uint256 _token2Amount) external {
+        // Deposit Tokens
         require(
-            (share1 / 10**3) == (share2 / 10**3),
-            "must provide equal token amounts"
+            token1.transferFrom(msg.sender, address(this), _token1Amount),
+            "failed to transfer token 1"
         );
-        share = share1;
+        require(
+            token2.transferFrom(msg.sender, address(this), _token2Amount),
+            "failed to transfer token 2"
+        );
+
+        // Issue Shares
+        uint256 share;
+
+        // If first time adding liquidity, make share 100
+        if (totalShares == 0) {
+            share = 100 * PRECISION;
+        } else {
+            uint256 share1 = (totalShares * _token1Amount) / token1Balance;
+            uint256 share2 = (totalShares * _token2Amount) / token2Balance;
+            require(
+                (share1 / 10**3) == (share2 / 10**3),
+                "must provide equal token amounts"
+            );
+            share = share1;
+        }
+
+        // Manage Pool
+        token1Balance += _token1Amount;
+        token2Balance += _token2Amount;
+        K = token1Balance * token2Balance;
+
+        // Updates shares
+        totalShares += share;
+        shares[msg.sender] += share;
     }
 
-    // Manage Pool
-    token1Balance += _token1Amount;
-    token2Balance += _token2Amount;
-    K = token1Balance * token2Balance;
-
-    // Updates shares
-    totalShares += share;
-    shares[msg.sender] += share;
-
-}
-
-   // Determine how many token2 tokens must be deposited when depositing liquidity for token1
+    // Determine how many token2 tokens must be deposited when depositing liquidity for token1
     function calculateToken2Deposit(uint256 _token1Amount)
         public
         view
@@ -92,7 +87,7 @@ function addLiquidity(uint256 _token1Amount, uint256 _token2Amount) external {
         token1Amount = (token1Balance * _token2Amount) / token2Balance;
     }
 
-        // Returns amount of token2 received when swapping token1
+    // Returns amount of token2 received when swapping token1
     function calculateToken1Swap(uint256 _token1Amount)
         public
         view
@@ -179,6 +174,38 @@ function addLiquidity(uint256 _token1Amount, uint256 _token2Amount) external {
             block.timestamp
         );
     }
+
+    // Determine how many tokens will be withdrawn
+    function calculateWithdrawAmount(uint256 _share)
+        public
+        view
+        returns (uint256 token1Amount, uint256 token2Amount)
+    {
+        require(_share <= totalShares, "must be less than total shares");
+        token1Amount = (_share * token1Balance) / totalShares;
+        token2Amount = (_share * token2Balance) / totalShares;
+    }
+
+    // Removes liquidity from the pool
+    function removeLiquidity(uint256 _share)
+        external
+        returns(uint256 token1Amount, uint256 token2Amount)
+    {
+        require(
+            _share <= shares[msg.sender],
+            "cannot withdraw more shares than you have"
+        );
+
+        (token1Amount, token2Amount) = calculateWithdrawAmount(_share);
+
+        shares[msg.sender] -= _share;
+        totalShares -= _share;
+
+        token1Balance -= token1Amount;
+        token2Balance -= token2Amount;
+        K = token1Balance * token2Balance;
+
+        token1.transfer(msg.sender, token1Amount);
+        token2.transfer(msg.sender, token2Amount);
+    }
 }
-
-
