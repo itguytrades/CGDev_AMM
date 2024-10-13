@@ -7,8 +7,12 @@ import { Container } from 'react-bootstrap'
 import {
   loadAccount,
   loadProvider,
-  loadNetwork
+  loadNetwork,
+  loadTokens,
+  loadAMM
 } from '../store/interactions'
+
+
 
 import Navigation from './Navigation';
 
@@ -25,19 +29,29 @@ function App() {
   const dispatch = useDispatch()
 
   const loadBlockchainData = async () => {
-  // Initiate provider
-  const provider = await loadProvider(dispatch)
+    // Initiate provider
+    const provider = await loadProvider(dispatch)
 
-  // Fetch current network's chainId (e.g. hardhat: 31337, kovan: 42)
-  await loadNetwork(provider, dispatch)
+    // Fetch current network's chainId (e.g. hardhat: 31337, kovan: 42)
+    const chainId = await loadNetwork(provider, dispatch)
 
-  // Fetch accounts
-  await loadAccount(dispatch)
+    // Reload page when network changes
+    window.ethereum.on('chainChanged', () => {
+      window.location.reload()
+    })
 
-}
+    // Fetch current account from Metamask when changed
+    window.ethereum.on('accountsChanged', async () => {
+      await loadAccount(dispatch)
+    })
+
+    // Initiate contracts
+    await loadTokens(provider, chainId, dispatch)
+    await loadAMM(provider, chainId, dispatch)
+  }
+
   useEffect(() => {
-      loadBlockchainData()
-
+    loadBlockchainData()
   }, []);
 
   return(
