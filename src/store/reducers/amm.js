@@ -32,6 +32,21 @@ export const amm = createSlice({
     swapsLoaded: (state, action) => {
       state.swaps = action.payload
     },
+    depositRequest: (state, action) => {
+      state.depositing.isDepositing = true
+      state.depositing.isSuccess = false
+      state.depositing.transactionHash = null
+    },
+    depositSuccess: (state, action) => {
+      state.depositing.isDepositing = false
+      state.depositing.isSuccess = true
+      state.depositing.transactionHash = action.payload
+    },
+    depositFail: (state, action) => {
+      state.depositing.isDepositing = false
+      state.depositing.isSuccess = false
+      state.depositing.transactionHash = null
+    },
     swapRequest: (state, action) => {
       state.swapping.isSwapping = true
       state.swapping.isSuccess = false
@@ -54,6 +69,9 @@ export const {
   setContract,
   sharesLoaded,
   swapsLoaded,
+  depositRequest,
+  depositSuccess,
+  depositFail,
   swapRequest,
   swapSuccess,
   swapFail
