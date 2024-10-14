@@ -21,6 +21,9 @@ import {
   depositRequest,
   depositSuccess,
   depositFail,
+  withdrawRequest,
+  withdrawSuccess,
+  withdrawFail,
   swapRequest,
   swapSuccess,
   swapFail
@@ -113,6 +116,23 @@ export const addLiquidity = async (provider, amm, tokens, amounts, dispatch) => 
 }
 
 // ------------------------------------------------------------------------------
+// REMOVE LIQUDITY
+export const removeLiquidity = async (provider, amm, shares, dispatch) => {
+  try {
+    dispatch(withdrawRequest())
+
+    const signer = await provider.getSigner()
+
+    let transaction = await amm.connect(signer).removeLiquidity(shares)
+    await transaction.wait()
+
+    dispatch(withdrawSuccess(transaction.hash))
+  } catch (error) {
+    dispatch(withdrawFail())
+  }
+}
+
+// ------------------------------------------------------------------------------
 // SWAP
 
 export const swap = async (provider, amm, token, symbol, amount, dispatch) => {
@@ -140,4 +160,18 @@ export const swap = async (provider, amm, token, symbol, amount, dispatch) => {
   } catch (error) {
     dispatch(swapFail())
   }
+}
+
+// ------------------------------------------------------------------------------
+// LOAD ALL SWAPS
+
+export const loadAllSwaps = async (provider, amm, dispatch) => {
+  const block = await provider.getBlockNumber()
+
+  const swapStream = await amm.queryFilter('Swap', 0, block)
+  const swaps = swapStream.map(event => {
+    return { hash: event.transactionHash, args: event.args }
+  })
+
+  dispatch(swapsLoaded(swaps))
 }
