@@ -31,8 +31,8 @@ async function main() {
   console.log(`Fetching token and transferring to accounts...\n`)
 
   // Fetch Dapp Token
-  const dapp = await ethers.getContractAt('Token', config[chainId].dapp.address)
-  console.log(`Dapp Token fetched: ${dapp.address}\n`)
+  const cgd = await ethers.getContractAt('Token', config[chainId].dapp.address)
+  console.log(`CGD Token fetched: ${cgd.address}\n`)
 
   // Fetch USD Token
   const usd = await ethers.getContractAt('Token', config[chainId].usd.address)
@@ -46,7 +46,7 @@ async function main() {
   let transaction
 
   // Send dapp tokens to investor 1
-  transaction = await dapp.connect(deployer).transfer(investor1.address, tokens(10))
+  transaction = await cgd.connect(deployer).transfer(investor1.address, tokens(10))
   await transaction.wait()
 
   // Send usd tokens to investor 2
@@ -54,7 +54,7 @@ async function main() {
   await transaction.wait()
 
   // Send dapp tokens to investor 3
-  transaction = await dapp.connect(deployer).transfer(investor3.address, tokens(10))
+  transaction = await cgd.connect(deployer).transfer(investor3.address, tokens(10))
   await transaction.wait()
 
   // Send usd tokens to investor 4
@@ -74,7 +74,7 @@ async function main() {
   const amm = await ethers.getContractAt('AMM', config[chainId].amm.address)
   console.log(`AMM fetched: ${amm.address}\n`)
 
-  transaction = await dapp.connect(deployer).approve(amm.address, amount)
+  transaction = await cgd.connect(deployer).approve(amm.address, amount)
   await transaction.wait()
 
   transaction = await usd.connect(deployer).approve(amm.address, amount)
@@ -92,7 +92,7 @@ async function main() {
   console.log(`Investor 1 Swaps...\n`)
 
   // Investor approves all tokens
-  transaction = await dapp.connect(investor1).approve(amm.address, tokens(10))
+  transaction = await cgd.connect(investor1).approve(amm.address, tokens(10))
   await transaction.wait()
 
   // Investor swaps 1 token
@@ -120,7 +120,7 @@ async function main() {
   console.log(`Investor 3 Swaps...\n`)
 
   // Investor approves all tokens
-  transaction = await dapp.connect(investor3).approve(amm.address, tokens(10))
+  transaction = await cgd.connect(investor3).approve(amm.address, tokens(10))
   await transaction.wait()
 
   // Investor swaps all 10 token
@@ -145,8 +145,6 @@ async function main() {
 
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;

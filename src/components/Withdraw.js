@@ -91,7 +91,7 @@ const Withdraw = () => {
             <hr />
 
             <Row>
-              <p><strong>DAPP Balance:</strong> {balances[0]}</p>
+              <p><strong>CGD Balance:</strong> {balances[0]}</p>
               <p><strong>USD Balance:</strong> {balances[1]}</p>
             </Row>
 

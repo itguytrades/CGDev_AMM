@@ -60,11 +60,11 @@ export const loadAccount = async (dispatch) => {
 // ------------------------------------------------------------------------------
 // LOAD CONTRACTS
 export const loadTokens = async (provider, chainId, dispatch) => {
-  const dapp = new ethers.Contract(config[chainId].dapp.address, TOKEN_ABI, provider)
+  const cgd = new ethers.Contract(config[chainId].cgd.address, TOKEN_ABI, provider)
   const usd = new ethers.Contract(config[chainId].usd.address, TOKEN_ABI, provider)
 
-  dispatch(setContracts([dapp, usd]))
-  dispatch(setSymbols([await dapp.symbol(), await usd.symbol()]))
+  dispatch(setContracts([cgd, usd]))
+  dispatch(setSymbols([await cgd.symbol(), await usd.symbol()]))
 }
 
 export const loadAMM = async (provider, chainId, dispatch) => {
@@ -147,7 +147,7 @@ export const swap = async (provider, amm, token, symbol, amount, dispatch) => {
     transaction = await token.connect(signer).approve(amm.address, amount)
     await transaction.wait()
 
-    if (symbol === "DAPP") {
+    if (symbol === "CGD") {
       transaction = await amm.connect(signer).swapToken1(amount)
     } else {
       transaction = await amm.connect(signer).swapToken2(amount)

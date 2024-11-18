@@ -52,7 +52,7 @@ const Swap = () => {
       return
     }
 
-    if (inputToken === 'DAPP') {
+    if (inputToken === 'CGD') {
       setInputAmount(e.target.value)
 
       const _token1Amount = ethers.utils.parseUnits(e.target.value, 'ether')
@@ -86,7 +86,7 @@ const Swap = () => {
     const _inputAmount = ethers.utils.parseUnits(inputAmount, 'ether')
 
     // Swap token depending upon which one we're doing...
-    if (inputToken === "DAPP") {
+    if (inputToken === "CGD") {
       await swap(provider, amm, tokens[0], inputToken, _inputAmount, dispatch)
     } else {
       await swap(provider, amm, tokens[1], inputToken, _inputAmount, dispatch)
@@ -105,7 +105,7 @@ const Swap = () => {
       return
     }
 
-    if (inputToken === 'DAPP') {
+    if (inputToken === 'CGD') {
       setPrice(await amm.token2Balance() / await amm.token1Balance())
     } else {
       setPrice(await amm.token1Balance() / await amm.token2Balance())
@@ -150,7 +150,7 @@ const Swap = () => {
                   variant="outline-secondary"
                   title={inputToken ? inputToken : "Select Token"}
                 >
-                  <Dropdown.Item onClick={(e) => setInputToken(e.target.innerHTML)} >DAPP</Dropdown.Item>
+                  <Dropdown.Item onClick={(e) => setInputToken(e.target.innerHTML)} >CGD</Dropdown.Item>
                   <Dropdown.Item onClick={(e) => setInputToken(e.target.innerHTML)} >USD</Dropdown.Item>
                 </DropdownButton>
               </InputGroup>
@@ -180,7 +180,7 @@ const Swap = () => {
                   variant="outline-secondary"
                   title={outputToken ? outputToken : "Select Token"}
                 >
-                  <Dropdown.Item onClick={(e) => setOutputToken(e.target.innerHTML)}>DAPP</Dropdown.Item>
+                  <Dropdown.Item onClick={(e) => setOutputToken(e.target.innerHTML)}>CGD</Dropdown.Item>
                   <Dropdown.Item onClick={(e) => setOutputToken(e.target.innerHTML)}>USD</Dropdown.Item>
                 </DropdownButton>
               </InputGroup>
